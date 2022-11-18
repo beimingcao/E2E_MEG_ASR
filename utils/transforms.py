@@ -28,6 +28,25 @@ class MEG_dim_selection(object):
             sel.append(_X)   
         X_sel = np.hstack(sel)
         return X_sel
+        
+class low_pass_filtering(object):
+    def __init__(self, cutoff_freq, fs):
+        
+        self.fs = fs
+        self.cutoff_freq = cutoff_freq
+    def __call__(self, I):
+        if self.cutoff_freq >= self.fs//2:
+            raise Exception("Cutoff freq must be lower than half of the sampling rate, based on the Nyquist criterion")
+        from scipy.signal import butter, lfilter
+        cutoff_norm = self.cutoff_freq/(self.fs/2)
+        b, a = butter(5, cutoff_norm, btype='low', analog=False)
+        I_filtered_list = []
+        for i in range(I.shape[1]):
+            _I = lfilter(b, a, I[:,i])
+            I_filtered_list.append(_I)
+            I_filtered = np.vstack(I_filtered_list)
+
+        return I_filtered.T
 
 class MEG_MVN(object):
     def __init__(self, X_mean, X_std):

@@ -14,12 +14,14 @@ MEG_data:
   max_dim: 204
   fix_missing_value: False
   dim_selection: True
-  selected_dims: [0, 30, 40, 60] # range of selected sensors [start1, end1, start2, end2, ... ]
+  selected_dims: [0, 30, 40, 60] # Range of selected sensors [start1, end1, start2, end2, ... ]
   low_pass_filtering: False
-  cutoff_freq_LP: 400 # in Hz (500 Hz at most)
+  LP_cutoff_freq: 400 # in Hz (half of sampling_rate at most)
   framing: True
   frame_len: 10
   frame_shift: 10
+  windowing: True # 
+  window_function: hamming # hamming or hanning
   delta: True
       
 Transforms:

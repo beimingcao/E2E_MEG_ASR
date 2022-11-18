@@ -4,7 +4,7 @@ import os
 import torch
 from utils.IO_func import read_file_list, load_binary_file, array_to_binary_file, load_Haskins_SSR_data, save_phone_label, save_word_label
 from shutil import copyfile
-from utils.transforms import Transform_Compose, MEG_dim_selection, FixMissingValues
+from utils.transforms import Transform_Compose, MEG_dim_selection, FixMissingValues, low_pass_filtering
 from scipy.io import wavfile
 
 
@@ -14,7 +14,9 @@ def data_processing(args):
     Load in data session involved, pre-processings like framing, dimension selection
     save them into binary files in the current_exp folder, 
     so that data loadin will be accelerated a lot.
-
+    
+    Transforms here are applied to all files, despite of training, validation, testing.
+    Therefore, transforms like normalization will not be performed here.
     '''
 
     config_path = args.conf_dir       
@@ -22,6 +24,7 @@ def data_processing(args):
     data_path = config['Corpus']['path']
     data_session = config['Data_setup']['session']
     out_folder = os.path.join(args.buff_dir, 'data')
+    sampling_rate = config['MEG_data']['sampling_rate']
     
     transforms = [FixMissingValues()] if config['Transforms']['fix_missing_value'] == True else [] #
     if config['MEG_data']['dim_selection'] == True:
@@ -29,6 +32,8 @@ def data_processing(args):
         transforms.append(MEG_dim_selection(sel_dim))
         
     if config['MEG_data']['low_pass_filtering'] == True:
+        cutoff_freq = config['MEG_data']['LP_cutoff_freq']
+        transforms.append(low_pass_filtering(cutoff_freq, sampling_rate))
     
 
 
