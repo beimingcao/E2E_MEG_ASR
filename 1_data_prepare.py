@@ -4,7 +4,7 @@ import os
 import torch
 from utils.IO_func import read_file_list, load_binary_file, array_to_binary_file, load_Haskins_SSR_data, save_phone_label, save_word_label
 from shutil import copyfile
-from utils.transforms import Transform_Compose, MEG_dim_selection, FixMissingValues, low_pass_filtering
+from utils.transforms import Transform_Compose, MEG_dim_selection, FixMissingValues, low_pass_filtering, MEG_framing
 from scipy.io import wavfile
 
 
@@ -26,7 +26,7 @@ def data_processing(args):
     out_folder = os.path.join(args.buff_dir, 'data')
     sampling_rate = config['MEG_data']['sampling_rate']
     
-    transforms = [FixMissingValues()] if config['Transforms']['fix_missing_value'] == True else [] #
+    transforms = [FixMissingValues()] if config['MEG_data']['fix_missing_values'] == True else [] #
     if config['MEG_data']['dim_selection'] == True:
         sel_dim = config['MEG_data']['selected_dims']
         transforms.append(MEG_dim_selection(sel_dim))
@@ -34,6 +34,11 @@ def data_processing(args):
     if config['MEG_data']['low_pass_filtering'] == True:
         cutoff_freq = config['MEG_data']['LP_cutoff_freq']
         transforms.append(low_pass_filtering(cutoff_freq, sampling_rate))
+        
+    if config['MEG_data']['framing'] == True:
+        frame_len, frame_shift = config['MEG_data']['frame_len'], config['MEG_data']['frame_shift']
+        drop_last = config['MEG_data']['drop_last']
+        transforms.append(MEG_framing(frame_len, frame_shift, drop_last))
     
 
 

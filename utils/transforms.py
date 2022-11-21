@@ -47,6 +47,36 @@ class low_pass_filtering(object):
             I_filtered = np.vstack(I_filtered_list)
 
         return I_filtered.T
+        
+class MEG_framing(object):
+    def __init__(self, frame_len, frame_shift, drop_last = True):
+        
+        self.frame_len = frame_len
+        self.frame_shift = frame_shift
+        self.drop_last = drop_last
+    def __call__(self, I):
+        frame_overlap = self.frame_len - self.frame_shift
+        
+        num_frames = np.abs(I.shape[0] - frame_overlap) // np.abs(self.frame_len - frame_overlap)
+        rest_samples = np.abs(I.shape[0] - frame_overlap) % np.abs(self.frame_len - frame_overlap)
+        
+        if rest_samples != 0:
+            pad_signal_length = int(frame_shift - rest_samples)
+            z = np.zeros((pad_signal_length))
+            pad_signal = np.append(I, z)
+            num_frames += 1
+        else:
+            pad_signal = I
+        
+        idx1 = np.tile(np.arange(0, self.frame_len), (num_frames, 1))
+        idx2 = np.tile(np.arange(0, num_frames * self.frame_shift, self.frame_shift),(self.frame_len, 1)).T
+        indices = idx1 + idx2
+        frames = pad_signal[indices.astype(np.int32, copy=False)]
+        
+        if self.drop_last == True:
+            frames = frames[:-1,:,:]
+        
+        return frames
 
 class MEG_MVN(object):
     def __init__(self, X_mean, X_std):

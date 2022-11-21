@@ -9,6 +9,7 @@ Data_setup:
   CV_to_run: [0] # [0, 1, 2, 3, 4, 5, 6, 7, 8] 
    
 MEG_data:
+  fix_missing_values: False
   sampling_rate: 1000 # in Hz
   dim_selection: False
   max_dim: 204
@@ -20,7 +21,8 @@ MEG_data:
   framing: True
   frame_len: 10
   frame_shift: 10
-  windowing: True # 
+  drop_last: True
+  windowing: True # to be implemented
   window_function: hamming # hamming or hanning
   delta: True
       
