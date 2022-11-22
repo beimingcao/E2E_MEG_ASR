@@ -1,11 +1,12 @@
 import time
 import yaml
 import os
+import glob
+import numpy as np
 import torch
 from utils.IO_func import read_file_list, load_binary_file, array_to_binary_file, load_Haskins_SSR_data, save_phone_label, save_word_label
 from shutil import copyfile
 from utils.transforms import Transform_Compose, MEG_dim_selection, FixMissingValues, low_pass_filtering, MEG_framing
-from scipy.io import wavfile
 
 
 def data_processing(args):
@@ -23,7 +24,7 @@ def data_processing(args):
     config = yaml.load(open(config_path, 'r'), Loader=yaml.FullLoader)
     data_path = config['Corpus']['path']
     data_session = config['Data_setup']['session']
-    out_folder = os.path.join(args.buff_dir, 'data')
+    out_folder = os.path.join(args.buff_dir, data_session)
     sampling_rate = config['MEG_data']['sampling_rate']
     
     transforms = [FixMissingValues()] if config['MEG_data']['fix_missing_values'] == True else [] #
@@ -36,41 +37,33 @@ def data_processing(args):
         transforms.append(low_pass_filtering(cutoff_freq, sampling_rate))
         
     if config['MEG_data']['framing'] == True:
+        # (sample_num, MEG_dim) --> (frame_num, frame_len, MEG_dim)
         frame_len, frame_shift = config['MEG_data']['frame_len'], config['MEG_data']['frame_shift']
         drop_last = config['MEG_data']['drop_last']
         transforms.append(MEG_framing(frame_len, frame_shift, drop_last))
     
-
-
     transforms_all = Transform_Compose(transforms)
     
-    for SPK in SPK_list:
-        out_folder_SPK = os.path.join(out_folder, SPK)
-        if not os.path.exists(out_folder_SPK):
-            os.makedirs(out_folder_SPK)
+    data_session_path = os.path.join(data_path, data_session)
+    if not os.path.exists(out_folder):
+        os.makedirs(out_folder)
+    
+    # Please remove all "non-data" txt files
+    data_file_path_list = glob.glob(data_session_path + '/*.txt')
+    data_file_path_list.sort()
+    for data_file_path in data_file_path_list:
+        file_id = os.path.basename(data_file_path)
+        data = np.loadtxt(data_file_path)
+        data_transformed = transforms_all(data)
+        data_Tensor = torch.from_numpy(data_transformed)
+        file_name = file_id[:-4] + '.pt'
+        out_dir = os.path.join(out_folder, file_name)
+        print(f"Writing {file_name} into the folder {out_folder}")
+        torch.save(data_Tensor, out_dir)
+    
 
-        fileset_path_SPK = os.path.join(fileset_path, SPK)
-        file_id_list = read_file_list(os.path.join(fileset_path_SPK, 'file_id_list.scp'))
 
-        for file_id in file_id_list:
-            data_path_spk = os.path.join(data_path, file_id[:3])
-            mat_path = os.path.join(data_path_spk, 'data/'+ file_id + '.mat')
-            EMA, fs_ema, wav, sent, phone_label, word_label, word_label_ms = load_Haskins_SSR_data(mat_path, file_id, sel_sensors, sel_dim)
-            EMA = transforms_all(EMA) 
-            WAV_out_dir = os.path.join(out_folder_SPK, file_id + '.wav')
-            EMA_out_dir = os.path.join(out_folder_SPK, file_id + '.ema')
-            PHO_out_dir = os.path.join(out_folder_SPK, file_id + '.phn')
-            WRD_out_dir = os.path.join(out_folder_SPK, file_id + '.wrd')
 
-            if file_id in bad_label_list:
-                phone_label = word_label_ms
-                sent = word_label
-
-            wavfile.write(WAV_out_dir, 44100, wav )
-            save_word_label(sent[0], WRD_out_dir)
-            save_phone_label(phone_label, PHO_out_dir)
-            array_to_binary_file(EMA, EMA_out_dir)
- 
             
 if __name__ == '__main__':
     import argparse

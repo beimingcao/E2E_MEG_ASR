@@ -1,5 +1,5 @@
 Corpus:
-  path: /home/beiming/RAW_DATA/MEG/case0554_A2_220715/Sentences
+  path: /home/beiming/RAW_DATA/MEG/case0554/Sentences
   label_file: PB400_phone.txt            
 
 Data_setup:

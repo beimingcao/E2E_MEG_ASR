@@ -59,24 +59,25 @@ class MEG_framing(object):
         
         num_frames = np.abs(I.shape[0] - frame_overlap) // np.abs(self.frame_len - frame_overlap)
         rest_samples = np.abs(I.shape[0] - frame_overlap) % np.abs(self.frame_len - frame_overlap)
-        
+                
         if rest_samples != 0:
-            pad_signal_length = int(frame_shift - rest_samples)
-            z = np.zeros((pad_signal_length))
-            pad_signal = np.append(I, z)
+            pad_signal_length = int(self.frame_shift - rest_samples)
+            z = np.zeros((pad_signal_length,I.shape[1]))
+            pad_signal = np.append(I, z, axis = 0)
             num_frames += 1
         else:
             pad_signal = I
-        
+
         idx1 = np.tile(np.arange(0, self.frame_len), (num_frames, 1))
         idx2 = np.tile(np.arange(0, num_frames * self.frame_shift, self.frame_shift),(self.frame_len, 1)).T
         indices = idx1 + idx2
-        frames = pad_signal[indices.astype(np.int32, copy=False)]
+        frames = pad_signal[indices.astype(np.int32, copy=False),:]
         
         if self.drop_last == True:
             frames = frames[:-1,:,:]
         
         return frames
+
 
 class MEG_MVN(object):
     def __init__(self, X_mean, X_std):
@@ -144,10 +145,6 @@ class Fix_EMA_MissingValues_ATS(FixMissingValues):
         return super().__call__(ema), wav
 
 class apply_delta_deltadelta_EMA_ATS(apply_delta_deltadelta):
-    def __call__(self, ema, wav):        
-        return super().__call__(ema), wav
-
-class ProcrustesMatching_ATS(ProcrustesMatching):
     def __call__(self, ema, wav):        
         return super().__call__(ema), wav
 
