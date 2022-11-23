@@ -58,15 +58,25 @@ def data_loadin(args):
         _CV_list.remove(i)
         
         test_idx = np.arange(len(MEG_path_list)//CV_num) + i*(len(MEG_path_list)//CV_num)        
-        train_val_idx = np.delete(np.arange(len(MEG_path_list)), test_idx)
+        train_valid_idx = np.delete(np.arange(len(MEG_path_list)), test_idx)
         random.seed(123)
-        random.shuffle(train_val_idx)
-        train_idx = train_val_idx[:int(len(train_val_idx)*train_ratio)]
-        val_idx = train_val_idx[int(len(train_val_idx)*train_ratio):]
+        random.shuffle(train_valid_idx)
+        train_idx = train_valid_idx[:int(len(train_valid_idx)*train_ratio)]
+        valid_idx = train_valid_idx[int(len(train_valid_idx)*train_ratio):]
         
         train_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, train_idx)
+        valid_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, valid_idx)
+        test_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, test_idx)
         
-            
+        train_pkl_path = os.path.join(CV_data_out_path, 'train_data.pkl')
+        tr = open(train_pkl_path, 'wb')
+        pickle.dump(train_dataset, tr)
+        valid_pkl_path = os.path.join(CV_data_out_path, 'valid_data.pkl')
+        va = open(valid_pkl_path, 'wb')
+        pickle.dump(valid_dataset, va)
+        test_pkl_path = os.path.join(CV_data_out_path, 'test_data.pkl')
+        te = open(test_pkl_path, 'wb')
+        pickle.dump(test_dataset, te)            
     
 
 if __name__ == '__main__':

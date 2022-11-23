@@ -6,7 +6,7 @@ Data_setup:
   session: Baseline # Baseline, Imagination, Articulation, Perception
   experiment_type: Cross-validation
   CV_num: 8
-  CV_to_run: [0] # [0, 1, 2, 3, 4, 5, 6, 7, 8]
+  CV_to_run: [0, 1] # [0, 1, 2, 3, 4, 5, 6, 7, 8]
   train_ratio: 0.9
    
 MEG_data:
@@ -41,7 +41,7 @@ NN_setup:
   
 Training setup:
   learning_rate: 0.0005 #1e-4
-  batch_size: 16
+  batch_size: 2
   epochs: 80
   early_stop: True
   patient: 10
@@ -49,7 +49,7 @@ Training setup:
 Testing_setup:
   save_model: True
   decoding: Greedy
-  beam_size: 2
+#  beam_size: 2
   
 ## Data augmentations
   
