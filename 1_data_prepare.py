@@ -24,7 +24,7 @@ def data_processing(args):
     config = yaml.load(open(config_path, 'r'), Loader=yaml.FullLoader)
     data_path = config['Corpus']['path']
     data_session = config['Data_setup']['session']
-    out_folder = os.path.join(args.buff_dir, data_session)
+    out_folder = os.path.join(args.buff_dir, data_session, 'data')
     sampling_rate = config['MEG_data']['sampling_rate']
     
     transforms = [FixMissingValues()] if config['MEG_data']['fix_missing_values'] == True else [] #
@@ -61,10 +61,7 @@ def data_processing(args):
         print(f"Writing {file_name} into the folder {out_folder}")
         torch.save(data_Tensor, out_dir)
     
-
-
-
-            
+          
 if __name__ == '__main__':
     import argparse
 

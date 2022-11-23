@@ -8,22 +8,30 @@ from torch.utils.data import Dataset, DataLoader
 from utils.IO_func import read_file_list, load_binary_file, array_to_binary_file, load_Haskins_ATS_data
 import librosa
 
-###################### Haskins IEEE dataset #####################################
-'''
+class MEG_PHONE_ASR(Dataset):
+    def __init__(self, MEG_path_list, LAB_list, idx_list, transforms=None):
+        self.MEG_path_list = MEG_path_list
+        self.LAB_list = LAB_list
+        self.idx_list = idx_list
+        self.transforms = transforms       
+        self.data = []
+        for idx in idx_list:
+            MEG = torch.load(MEG_path_list[idx])
+            Phone_seq = LAB_list[idx].strip().split(' ')
+            Phone_seq_with_sil = ['SIL'] + Phone_seq + ['SIL']
+            text_transform = PhoneTransform()
+            label = torch.Tensor(text_transform.text_to_int(Phone_seq_with_sil))
+            self.data.append((MEG, label))
 
-org_sensor_list = ['TR', 'TB', 'TT', 'UL', 'LL', 'ML', 'JAW', 'JAWL']
-org_dim_per_sensor = ['px', 'py', 'pz', 'ox', 'oy', 'oz']
+    def __len__(self):
+        return len(self.data)
 
+    def __getitem__(self, idx):
 
-EMA trajectory format [nSamps x 6 dimensions]:
-	posX (mm)
-	posY
-	posZ
-	rotation around X (degrees)
-	         around Y
-	         around Z 
-
-'''
+        MEG, PHN = self.data[idx]     
+        if self.transforms is not None:
+            MEG, PHN = self.transforms(MEG, PHN)         
+        return (MEG, PHN)
 
 def phn_file_parse(phn_path):
     
@@ -48,7 +56,7 @@ class PhoneTransform:
     """Maps characters to integers and vice versa"""
     def __init__(self):
         char_map_str = """
-        SP 0
+        SIL 0
         AA 1
         AE 2
         AH 3
@@ -114,34 +122,3 @@ class PhoneTransform:
         for i in labels:
             string.append(self.index_map[int(i)])
         return string
-
-################ Haskins dataset for SSR #######################
-
-class HaskinsData_SSR(Dataset):
-    def __init__(self, data_path, file_list, ema_dim, transforms=None):
-        self.data_path = data_path
-        self.file_list = file_list
-        self.ema_dim = ema_dim
-        self.transforms = transforms
-        
-        self.data = []
-        for file_id in self.file_list:
-            data_path_spk = os.path.join(self.data_path, file_id[:3])
-            ema_path = os.path.join(data_path_spk, file_id + '.ema')
-            phn_path = os.path.join(data_path_spk, file_id + '.phn')
-            ema = load_binary_file(ema_path, self.ema_dim)
-            phone_seq, starts, ends = phn_file_parse(phn_path)
-            text_transform = PhoneTransform()
-            label = torch.Tensor(text_transform.text_to_int(phone_seq))
-            self.data.append((file_id, ema, label))
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-
-        file_id, EMA, TXT = self.data[idx]     
-        if self.transforms is not None:
-            EMA, TXT = self.transforms(EMA, TXT)         
-        return (file_id, EMA, TXT)
-

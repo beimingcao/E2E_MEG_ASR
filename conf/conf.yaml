@@ -6,7 +6,8 @@ Data_setup:
   session: Baseline # Baseline, Imagination, Articulation, Perception
   experiment_type: Cross-validation
   CV_num: 8
-  CV_to_run: [0] # [0, 1, 2, 3, 4, 5, 6, 7, 8] 
+  CV_to_run: [0] # [0, 1, 2, 3, 4, 5, 6, 7, 8]
+  train_ratio: 0.9
    
 MEG_data:
   fix_missing_values: False
@@ -23,12 +24,11 @@ MEG_data:
   frame_shift: 10
   drop_last: True
   windowing: True # to be implemented
-  window_function: hamming # hamming or hanning
-  delta: True
+  window_function: hamming # hamming or hanning is good
+  delta: False # to be added
       
 Transforms:
   normalize_input: True
-  with_silence: True
   
 # Deep learning model setup
   
