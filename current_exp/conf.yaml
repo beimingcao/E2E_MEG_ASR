@@ -6,7 +6,7 @@ Data_setup:
   session: Baseline # Baseline, Imagination, Articulation, Perception
   experiment_type: Cross-validation
   CV_num: 8
-  CV_to_run: [0, 1] # [0, 1, 2, 3, 4, 5, 6, 7, 8]
+  CV_to_run: [0] # [0, 1, 2, 3, 4, 5, 6, 7, 8]
   train_ratio: 0.9
    
 MEG_data:
@@ -14,14 +14,13 @@ MEG_data:
   sampling_rate: 1000 # in Hz
   dim_selection: False
   max_dim: 204
-  fix_missing_value: False
-  dim_selection: False
+  dim_selection: True
   selected_dims: [0, 30, 40, 60] # Range of selected sensors [start1, end1, start2, end2, ... ]
   low_pass_filtering: False
-  LP_cutoff_freq: 400 # in Hz (half of sampling_rate at most)
+  LP_cutoff_freq: 400 # in Hz (half of sampling_rate at most < 500Hz)
   framing: True
-  frame_len: 10
-  frame_shift: 10
+  frame_len: 10 # 25ms ~ 50 ms
+  frame_shift: 10 # 10 ms
   drop_last: True
   windowing: True # to be implemented
   window_function: hamming # hamming or hanning is good
@@ -41,8 +40,8 @@ NN_setup:
   
 Training setup:
   learning_rate: 0.0005 #1e-4
-  batch_size: 2
-  epochs: 80
+  batch_size: 1
+  epochs: 10
   early_stop: True
   patient: 10
   

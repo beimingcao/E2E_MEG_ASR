@@ -19,6 +19,14 @@ def test_MEG_ASR(CV, test_dataset, exp_output_folder, args):
     ### Dimension setup ###
     config = yaml.load(open(args.conf_dir, 'r'), Loader=yaml.FullLoader)
     
+    if config['MEG_data']['dim_selection'] == True:
+        sel_dim = config['MEG_data']['selected_dims']
+        in_dim = 0
+        for i in range(len(sel_dim) // 2):
+            in_dim += sel_dim[2*i+1] - sel_dim[2*i]
+    else:
+        in_dim = config['MEG_data']['max_dim']
+    
     ### Model setup ###
     n_cnn_layers = config['NN_setup']['n_cnn_layers']
     n_rnn_layers = config['NN_setup']['n_rnn_layers']    
@@ -36,7 +44,7 @@ def test_MEG_ASR(CV, test_dataset, exp_output_folder, args):
         
     SPK_model_path = os.path.join(model_out_folder)
     model_path = os.path.join(SPK_model_path, 'CV' + str(CV) + '_DS.pt')
-    model = SpeechRecognitionModel(n_cnn_layers, n_rnn_layers, rnn_dim, 41, 204, stride, dropout)
+    model = SpeechRecognitionModel(n_cnn_layers, n_rnn_layers, rnn_dim, 41, in_dim, stride, dropout)
     model.load_state_dict(torch.load(model_path, map_location='cpu'))
     model.eval()
     
@@ -55,6 +63,7 @@ def test_MEG_ASR(CV, test_dataset, exp_output_folder, args):
 
         pred.append(' '.join(decoded_preds[0]))
         label.append(' '.join(decoded_targets[0]))
+        
     error = wer(pred, label)
     return error
 

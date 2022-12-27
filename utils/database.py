@@ -103,7 +103,6 @@ class PhoneTransform:
             ch, index = line.split()
             self.char_map[ch] = int(index)
             self.index_map[int(index)] = ch
-        self.index_map[1] = ' '
 
     def text_to_int(self, text):
         """ Use a character map and convert text to an integer sequence """

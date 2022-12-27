@@ -30,6 +30,13 @@ def train_MEG_ASR(CV, train_dataset, valid_dataset, exp_output_folder, args):
 
     ### Dimension setup ###
     config = yaml.load(open(args.conf_dir, 'r'), Loader=yaml.FullLoader)
+    if config['MEG_data']['dim_selection'] == True:
+        sel_dim = config['MEG_data']['selected_dims']
+        in_dim = 0
+        for i in range(len(sel_dim) // 2):
+            in_dim += sel_dim[2*i+1] - sel_dim[2*i]
+    else:
+        in_dim = config['MEG_data']['max_dim']
 
     ### Model setup ###
     n_cnn_layers = config['NN_setup']['n_cnn_layers']
@@ -54,7 +61,7 @@ def train_MEG_ASR(CV, train_dataset, valid_dataset, exp_output_folder, args):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, collate_fn=lambda x: data_processing_DeepSpeech(x, transforms = None))                                
     valid_loader = torch.utils.data.DataLoader(dataset=valid_dataset, batch_size=batch_size, shuffle=False, collate_fn=lambda x: data_processing_DeepSpeech(x, transforms = None))
     ### **************** Make input dim flexible later                            
-    model = SpeechRecognitionModel(n_cnn_layers, n_rnn_layers, rnn_dim, 41, 204, stride, dropout).to(device)
+    model = SpeechRecognitionModel(n_cnn_layers, n_rnn_layers, rnn_dim, 41, in_dim, stride, dropout).to(device)
     
     optimizer = torch.optim.AdamW(model.parameters(), learning_rate)
     criterion = torch.nn.CTCLoss(blank=40).to(device)

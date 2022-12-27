@@ -18,12 +18,12 @@ class MEG_dim_selection(object):
     def __init__(self, dim_range):
         self.dim_range = dim_range
     def __call__(self, X):
-        if len(dim_range) % 2 != 0:
+        if len(self.dim_range) % 2 != 0:
             raise Exception("Nums of starts and ends don't match, please check!")
         sel = []   
-        for i in range(len(dim_range)//2):
-            start = dim_range[2*i]
-            end = dim_range[2*i+1]            
+        for i in range(len(self.dim_range)//2):
+            start = self.dim_range[2*i]
+            end = self.dim_range[2*i+1]            
             _X = X[:,start:end]           
             sel.append(_X)   
         X_sel = np.hstack(sel)
