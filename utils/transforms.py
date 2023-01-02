@@ -77,6 +77,75 @@ class MEG_framing(object):
             frames = frames[:-1,:,:]
         
         return frames
+        
+class MEG_freq_feats(object):
+    """
+    Input: 2-D MEG data array (shape: (samples, channels/sensors))
+    ---
+    For more details about the first 5 argunebts, please see the signal.spectrogram() function of the scipy package:
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.spectrogram.html
+    
+    fs:
+        Sampling frequency in Hz (default: 1000)
+    window:
+        Window to use (default: ('tukey', 0.25))
+    nperseg:
+        Length of each segment (default: 128)
+    noveral:
+        Overlap between segments (default: None)
+    nfft:
+        Length of the FFT (default: None)
+    log_transform:
+        Apply log-transformation to the spectrogram? (default: True)
+    freq_range:
+        Frequency range to retain in the spectrogram (default: (0, 130), from 0 Hz to 130 Hz) 
+    ---
+    Output: 3-D array containing spectrograms of all channels (shape: (channels/sensors, frequency, time))
+    """
+    def __init__(self, fs = 1000, window = ('tukey', 0.25), 
+                 nperseg = 128, noverlap = None, nfft = None,
+                log_transform = True,
+                freq_range = (0, 130)):
+        self.fs = fs
+        self.window = window
+        self.nperseg = nperseg
+        self.noverlap = noverlap
+        self.nfft = nfft
+        self.log_transform = log_transform
+        self.freq_min, self.freq_max = freq_range
+        
+    def __call__(self, I):
+        from scipy import signal
+        
+        all_specs = []
+        
+        # Loop through all channels/sensors
+        for i in range(I.shape[1]):
+            
+            # Get the MEG timeseries of the current channel and its spectrogram
+            X = I[:, i]
+            f, t, spec = signal.spectrogram(X, fs = self.fs, window = self.window,
+                                            nperseg = self.nperseg, noverlap = self.noverlap,
+                                            nfft = self.nfft)
+
+            # Apply log transformation if needed
+            if self.log_transform: 
+                spec = np.log(spec)
+            
+            if all_specs:
+                spec = spec[idx_band, :]
+                all_specs.append(spec)
+            else:
+                # Keep just the part of the spectrogram within the required frequency band
+                # (idx_band needs to be computed only at the first iteration since it should be the 
+                # same across all channels/sensors)
+                idx_band = np.logical_and(f >= self.freq_min, f <= self.freq_max)
+                spec = spec[idx_band, :]
+                all_specs.append(spec)
+        
+        all_specs = np.array(all_specs)
+        return all_specs
+
 
 
 class MEG_MVN(object):

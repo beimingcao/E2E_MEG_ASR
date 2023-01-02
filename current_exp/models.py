@@ -126,6 +126,7 @@ class SpeechRecognitionModel(nn.Module):
         self.bn = nn.BatchNorm2d(1)
 
     def forward(self, x):
+
         x = self.bn(x)
         
         x = self.cnn(x)

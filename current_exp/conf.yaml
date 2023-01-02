@@ -40,7 +40,7 @@ NN_setup:
   
 Training setup:
   learning_rate: 0.0005 #1e-4
-  batch_size: 1
+  batch_size: 16
   epochs: 10
   early_stop: True
   patient: 10
