@@ -4,11 +4,11 @@ import os
 import torch
 import pickle
 from torch.utils.data import Dataset, DataLoader
-from utils.models import SpeechRecognitionModel
-from utils.models import save_model
+from utils.models_spec import SpeechRecognitionModel
+from utils.models_spec import save_model
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
-from utils.utils import EarlyStopping, IterMeter, data_processing_DeepSpeech
+from utils.utils import EarlyStopping, IterMeter
 import torch.nn.functional as F
 
 import random
@@ -22,6 +22,27 @@ torch.cuda.manual_seed_all(seed)
 random.seed(seed)
 torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
+
+def data_processing_DeepSpeech(data, transforms = None):
+    meg = []
+    labels = []
+    input_lengths = []
+    label_lengths = []
+    
+    for x, y in data:
+        if transforms is not None:
+            x = transforms(x)
+        x = x.transpose(0,2)
+        meg.append(x)
+        labels.append(y)
+        input_lengths.append(x.shape[0] // 2)
+        label_lengths.append(len(y))
+        
+    meg = torch.nn.utils.rnn.pad_sequence(meg, batch_first=True)
+    labels = torch.nn.utils.rnn.pad_sequence(labels, batch_first=True)        
+    
+    return meg, labels, input_lengths, label_lengths
+
 
 
 def train_MEG_ASR(CV, train_dataset, valid_dataset, exp_output_folder, args):
@@ -37,7 +58,6 @@ def train_MEG_ASR(CV, train_dataset, valid_dataset, exp_output_folder, args):
             in_dim += sel_dim[2*i+1] - sel_dim[2*i]
     else:
         in_dim = config['MEG_data']['max_dim']
-
     ### Model setup ###
     n_cnn_layers = config['NN_setup']['n_cnn_layers']
     n_rnn_layers = config['NN_setup']['n_rnn_layers']    
@@ -82,9 +102,8 @@ def train_MEG_ASR(CV, train_dataset, valid_dataset, exp_output_folder, args):
                 meg, labels, input_lengths, label_lengths = _data 
                                    
                 meg, labels = meg.to(device), labels.to(device)
-                x = torch.mean(meg, 2).transpose(2, 3)
+                x = meg.transpose(1,3)
                 output = model(x)  # (batch, time, n_class)
-
                 output = F.log_softmax(output, dim=2)
                 output = output.transpose(0, 1) # (time, batch, n_class)
 
@@ -103,7 +122,7 @@ def train_MEG_ASR(CV, train_dataset, valid_dataset, exp_output_folder, args):
             for batch_idx, _data in enumerate(valid_loader):  
                 meg, labels, input_lengths, label_lengths = _data 
                 meg, labels = meg.to(device), labels.to(device)           
-                x = torch.mean(meg, 2).transpose(2, 3)    
+                x = meg.transpose(1,3)   
                 output = model(x)  # (batch, time, n_class)
                 output = F.log_softmax(output, dim=2)
                 output = output.transpose(0, 1) # (time, batch, n_class)
@@ -131,7 +150,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--conf_dir', default = 'conf/conf.yaml')
+    parser.add_argument('--conf_dir', default = 'conf/conf_spec.yaml')
     parser.add_argument('--buff_dir', default = 'current_exp')
     args = parser.parse_args()
     config = yaml.load(open(args.conf_dir, 'r'), Loader=yaml.FullLoader)
@@ -148,6 +167,3 @@ if __name__ == '__main__':
         train_dataset, valid_dataset = pickle.load(tr), pickle.load(va)
  
         train_MEG_ASR(CV, train_dataset, valid_dataset, args.buff_dir, args)   
-
-
-

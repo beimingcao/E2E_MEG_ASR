@@ -24,7 +24,6 @@ def data_processing_DeepSpeech(data, transforms = None):
         label_lengths.append(len(y))
         
     meg = torch.nn.utils.rnn.pad_sequence(meg, batch_first=True).unsqueeze(1).transpose(2, 3)
-  #  meg = torch.nn.utils.rnn.pad_sequence(meg, batch_first=True).unsqueeze(1)
     labels = torch.nn.utils.rnn.pad_sequence(labels, batch_first=True)        
     
     return meg, labels, input_lengths, label_lengths
