@@ -34,8 +34,8 @@ NN_setup:
   dropout: 0.3
   
 Training setup:
-  learning_rate: 0.0001 #1e-4
-  batch_size: 4
+  learning_rate: 0.0003 #1e-4
+  batch_size: 1
   epochs: 80
   early_stop: True
   patient: 20
