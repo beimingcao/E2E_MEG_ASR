@@ -28,17 +28,17 @@ Transforms:
   
 NN_setup:
   n_cnn_layers: 2
-  n_rnn_layers: 2
+  n_rnn_layers: 1
   rnn_dim: 512
   stride: 2
-  dropout: 0.3
+  dropout: 0.8
   
 Training setup:
-  learning_rate: 0.0001 #1e-4
-  batch_size: 4
+  learning_rate: 0.0002 #1e-4
+  batch_size: 1
   epochs: 80
   early_stop: True
-  patient: 20
+  patient: 10
   
 Testing_setup:
   save_model: True
