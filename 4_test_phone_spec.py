@@ -83,7 +83,7 @@ def test_MEG_ASR(CV, test_dataset, exp_output_folder, args):
    
         pred.append(' '.join(decoded_preds[0]))
         label.append(' '.join(decoded_targets[0]))
-        print(pred)
+      #  print(pred)
     error = wer(pred, label)
     return error
 

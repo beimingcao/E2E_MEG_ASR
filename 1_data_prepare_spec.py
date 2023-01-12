@@ -59,8 +59,6 @@ def data_processing(args):
         data_transformed = transforms_all(data)
         data_Tensor = torch.FloatTensor(data_transformed)
         
-        print(data_Tensor.shape)
-        
         file_name = file_id[:-4] + '.pt'
         out_dir = os.path.join(out_folder, file_name)
         print(f"Writing {file_name} into the folder {out_folder}")

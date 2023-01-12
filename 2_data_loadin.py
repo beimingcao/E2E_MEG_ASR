@@ -8,6 +8,8 @@ import pickle
 from torch.utils.data import Dataset, DataLoader
 from shutil import copyfile
 import random
+import torchvision
+import torchvision.transforms as T
 
 from utils.database import MEG_PHONE_ASR
 
@@ -64,9 +66,27 @@ def data_loadin(args):
         train_idx = train_valid_idx[:int(len(train_valid_idx)*train_ratio)]
         valid_idx = train_valid_idx[int(len(train_valid_idx)*train_ratio):]
         
-        train_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, train_idx)
-        valid_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, valid_idx)
-        test_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, test_idx)
+        if config['Transforms']['normalize_input'] == True:    
+            _train_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, train_idx)
+            meg_mean_all, meg_std_all = [], []              
+            for meg, _ in _train_dataset:                
+                meg_mean_all.append(torch.mean(torch.mean(meg, dim = 1), dim = 1))
+                meg_std_all.append(torch.std(torch.std(meg, dim = 1), dim = 1))
+            MEAN_ALL = torch.stack(meg_mean_all)
+            STD_ALL = torch.stack(meg_std_all)
+            
+            MEAN = torch.mean(MEAN_ALL, dim = 0)
+            STD = torch.std(STD_ALL, dim = 0)            
+            MVN = T.Normalize(mean=MEAN, std=STD)
+
+            train_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, train_idx, transforms = MVN)
+            valid_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, valid_idx, transforms = MVN)
+            test_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, test_idx, transforms = MVN)     
+        else:
+            train_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, train_idx)
+            valid_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, valid_idx)
+            test_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, test_idx)
+        
         
         train_pkl_path = os.path.join(CV_data_out_path, 'train_data.pkl')
         tr = open(train_pkl_path, 'wb')

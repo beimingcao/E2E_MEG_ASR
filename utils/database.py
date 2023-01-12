@@ -30,7 +30,7 @@ class MEG_PHONE_ASR(Dataset):
 
         MEG, PHN = self.data[idx]     
         if self.transforms is not None:
-            MEG, PHN = self.transforms(MEG, PHN)         
+            MEG, PHN = self.transforms(MEG), PHN         
         return (MEG, PHN)
 
 def phn_file_parse(phn_path):
