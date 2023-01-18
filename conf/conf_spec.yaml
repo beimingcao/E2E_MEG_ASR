@@ -29,13 +29,13 @@ Transforms:
 NN_setup:
   n_cnn_layers: 2
   n_rnn_layers: 1
-  rnn_dim: 256
+  rnn_dim: 512
   stride: 2
-  dropout: 0.3
+  dropout: 0.7
   
 Training setup:
-  learning_rate: 0.0002 #1e-4
-  batch_size: 1
+  learning_rate: 0.0003 #1e-4
+  batch_size: 4
   epochs: 200
   early_stop: True
   patient: 20
@@ -43,3 +43,17 @@ Training setup:
 Testing_setup:
   save_model: True
   decoding: Greedy
+  
+data_augmentation:
+  random_time_mask: False
+  random_freq_mask: False
+  
+random_time_mask:
+  ratio: 0.8
+  mask_num: 50
+  
+random_freq_mask:
+  ratio: 0.8
+  mask_num: 20
+  
+

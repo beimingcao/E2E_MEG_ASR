@@ -14,6 +14,7 @@ import torch.nn.functional as F
 import random
 import numpy as np
 import torchaudio
+from utils.transforms import Transform_Compose, ema_time_mask, ema_freq_mask
 
 seed = 123
 torch.manual_seed(seed)
@@ -76,9 +77,28 @@ def train_MEG_ASR(CV, train_dataset, valid_dataset, exp_output_folder, args):
         os.makedirs(train_out_folder)
     results = os.path.join(train_out_folder, 'CV' + str(CV) + '_train.txt')
     
+    ### Data augmentation setup ###
+    
+    data_aug_transform = []
+    
+    random_time_mask = config['data_augmentation']['random_time_mask']
+    random_freq_mask = config['data_augmentation']['random_freq_mask']
+    
+    if random_time_mask == True:             
+        ratio = config['random_time_mask']['ratio']
+        mask_frame_num = config['random_time_mask']['mask_num']               
+        data_aug_transform.append(ema_time_mask(prob = ratio, mask_num = mask_frame_num))  
+            
+    if random_freq_mask == True:             
+        ratio = config['random_freq_mask']['ratio']
+        mask_frame_num = config['random_freq_mask']['mask_num']
+        data_aug_transform.append(ema_freq_mask(prob = ratio, mask_num = mask_frame_num)) 
+        
+    data_aug_transform_all = Transform_Compose(data_aug_transform)
+    
     ### Model training ###
             
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, collate_fn=lambda x: data_processing_DeepSpeech(x, transforms = None))                                
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, collate_fn=lambda x: data_processing_DeepSpeech(x, transforms = data_aug_transform_all))                                
     valid_loader = torch.utils.data.DataLoader(dataset=valid_dataset, batch_size=batch_size, shuffle=False, collate_fn=lambda x: data_processing_DeepSpeech(x, transforms = None))
     ### **************** Make input dim flexible later                            
     model = SpeechRecognitionModel(n_cnn_layers, n_rnn_layers, rnn_dim, 41, in_dim, stride, dropout).to(device)

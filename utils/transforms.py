@@ -250,6 +250,32 @@ class apply_WAV_MinMax(object):
         return X, Y_norm
         
 ####### Data augmentation transform ########
+
+class meg_time_mask(object):
+    def __init__(self, prob = 0.5, mask_num = 20):
+        self.prob = prob
+        self.mask_num = mask_num
+           
+    def __call__(self, meg):
+        masking = torchaudio.transforms.TimeMasking(time_mask_param=self.mask_num)
+        if random.random() < self.prob:
+            for j in range(meg.shape[0]):
+                meg[j,0,:,:] = masking(meg[j,0,:,:])                 
+        return meg
+        
+        
+class meg_freq_mask(object):
+    def __init__(self, prob = 0.5, mask_num = 20):
+        self.prob = prob
+        self.mask_num = mask_num
+           
+    def __call__(self, meg):
+        masking = torchaudio.transforms.FrequencyMasking(freq_mask_param=self.mask_num)
+        if random.random() < self.prob:
+            for j in range(meg.shape[0]):
+                meg[j,0,:,:] = masking(meg[j,0,:,:])                      
+        return meg
+        
 '''
 class ema_wav_random_scale(object):
     def __init__(self, prob = 0.5, rates = [0.8, 0.9, 1.1, 1.2]):
