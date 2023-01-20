@@ -260,7 +260,7 @@ class meg_time_mask(object):
         masking = torchaudio.transforms.TimeMasking(time_mask_param=self.mask_num)
         if random.random() < self.prob:
             for j in range(meg.shape[0]):
-                meg[j,0,:,:] = masking(meg[j,0,:,:])                 
+                meg[j,:,:] = masking(meg[j,:,:].unsqueeze(0)).squeeze(0)                
         return meg
         
         
@@ -273,7 +273,7 @@ class meg_freq_mask(object):
         masking = torchaudio.transforms.FrequencyMasking(freq_mask_param=self.mask_num)
         if random.random() < self.prob:
             for j in range(meg.shape[0]):
-                meg[j,0,:,:] = masking(meg[j,0,:,:])                      
+                meg[j,:,:] = masking(meg[j,:,:].unsqueeze(0)).squeeze(0)                      
         return meg
         
 '''

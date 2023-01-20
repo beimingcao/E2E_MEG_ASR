@@ -14,7 +14,7 @@ import torch.nn.functional as F
 import random
 import numpy as np
 import torchaudio
-from utils.transforms import Transform_Compose, ema_time_mask, ema_freq_mask
+from utils.transforms import Transform_Compose, meg_time_mask, meg_freq_mask
 
 seed = 123
 torch.manual_seed(seed)
@@ -87,12 +87,12 @@ def train_MEG_ASR(CV, train_dataset, valid_dataset, exp_output_folder, args):
     if random_time_mask == True:             
         ratio = config['random_time_mask']['ratio']
         mask_frame_num = config['random_time_mask']['mask_num']               
-        data_aug_transform.append(ema_time_mask(prob = ratio, mask_num = mask_frame_num))  
+        data_aug_transform.append(meg_time_mask(prob = ratio, mask_num = mask_frame_num))  
             
     if random_freq_mask == True:             
         ratio = config['random_freq_mask']['ratio']
         mask_frame_num = config['random_freq_mask']['mask_num']
-        data_aug_transform.append(ema_freq_mask(prob = ratio, mask_num = mask_frame_num)) 
+        data_aug_transform.append(meg_freq_mask(prob = ratio, mask_num = mask_frame_num)) 
         
     data_aug_transform_all = Transform_Compose(data_aug_transform)
     

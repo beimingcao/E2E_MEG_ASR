@@ -45,8 +45,8 @@ Testing_setup:
   decoding: Greedy
   
 data_augmentation:
-  random_time_mask: False
-  random_freq_mask: False
+  random_time_mask: True
+  random_freq_mask: True
   
 random_time_mask:
   ratio: 0.8
