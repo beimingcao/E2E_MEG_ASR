@@ -1,9 +1,12 @@
 Corpus:
-  path: /home/beiming/RAW_DATA/MEG/case0554_A2_220715/Sentences
-  label_file: PB400_phone.txt            
+  # path: /home/beiming/RAW_DATA/MEG/case0554_A2_220715/Sentences
+  path: C:\Users\wanglab\Desktop\Zhe-chen\NeuralSpeechDecoding\MEG\Sentences
+  label_file: PB400_phone.txt
+  sensor_name_file: MEG_sensors_204.txt          
 
 Data_setup:
-  session: Baseline # Baseline, Imagination, Articulation, Perception
+  # session: Baseline # Baseline, Imagination, Articulation, Perception
+  session: Articulation
   experiment_type: Cross-validation
   CV_num: 8
   CV_to_run: [0] # [0, 1, 2, 3, 4, 5, 6, 7, 8]
@@ -14,8 +17,9 @@ MEG_data:
   sampling_rate: 1000 # in Hz
   dim_selection: False
   max_dim: 204
-  dim_selection: False
-  selected_dims: [0, 30, 40, 60] # Range of selected sensors [start1, end1, start2, end2, ... ]
+  dim_selection: True
+  # selected_dims: [0, 30, 40, 60] # Range of selected sensors [start1, end1, start2, end2, ... ]
+  selected_dims: [MEG1612, MEG1613, MEG1622, MEG1623, MEG1632, MEG1633, MEG1642, MEG1643, MEG0212, MEG0213, MEG0222, MEG0223, MEG0322, MEG0323, MEG0332, MEG0333, MEG0342, MEG0343, MEG0412, MEG0413]
   low_pass_filtering: False
   LP_cutoff_freq: 400 # in Hz (half of sampling_rate at most < 500Hz)
   frame_length: 128 # nperseg
@@ -29,16 +33,16 @@ Transforms:
 NN_setup:
   n_cnn_layers: 2
   n_rnn_layers: 1
-  rnn_dim: 512
+  rnn_dim: 256
   stride: 2
   dropout: 0.7
   
 Training setup:
-  learning_rate: 0.0003 #1e-4
-  batch_size: 4
-  epochs: 200
+  learning_rate: 0.002 #1e-4
+  batch_size: 1
+  epochs: 150
   early_stop: True
-  patient: 20
+  patient: 15
   
 Testing_setup:
   save_model: True

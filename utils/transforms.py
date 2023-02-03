@@ -15,20 +15,25 @@ class Transform_Compose(object):
         return X
         
 class MEG_dim_selection(object):
-    def __init__(self, dim_range):
+    def __init__(self, dim_range, sensor_name_idx = None):
         self.dim_range = dim_range
+        self.sensor_name_idx = sensor_name_idx
     def __call__(self, X):
-        if len(self.dim_range) % 2 != 0:
-            raise Exception("Nums of starts and ends don't match, please check!")
-        sel = []   
-        for i in range(len(self.dim_range)//2):
-            start = self.dim_range[2*i]
-            end = self.dim_range[2*i+1]            
-            _X = X[:,start:end]           
-            sel.append(_X)   
-        X_sel = np.hstack(sel)
-        return X_sel
-        
+        # When using start and end indices to select sensors
+        if self.sensor_name_idx is None:
+            if len(self.dim_range) % 2 != 0:            
+                raise Exception("Nums of starts and ends don't match, please check!")
+            sel = []   
+            for i in range(len(self.dim_range)//2):
+                start = self.dim_range[2*i]
+                end = self.dim_range[2*i+1]            
+                _X = X[:,start:end]           
+                sel.append(_X)   
+            X_sel = np.hstack(sel)
+            return X_sel
+        else:
+            return X[:, self.sensor_name_idx]
+
 class low_pass_filtering(object):
     def __init__(self, cutoff_freq, fs):
         

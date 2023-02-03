@@ -30,7 +30,21 @@ def data_processing(args):
     transforms = [FixMissingValues()] if config['MEG_data']['fix_missing_values'] == True else [] #
     if config['MEG_data']['dim_selection'] == True:
         sel_dim = config['MEG_data']['selected_dims']
-        transforms.append(MEG_dim_selection(sel_dim))
+
+        # When using start and end indices to select sensors
+        if all(isinstance(x, int) for x in sel_dim):
+            transforms.append(MEG_dim_selection(sel_dim))
+        # When using sensor names to select sensors
+        elif all(isinstance(x, str) for x in sel_dim):
+            sensor_name_file = config['Corpus']['sensor_name_file']
+            sensor_name_file_path = os.path.join(data_path, sensor_name_file)
+            with open(sensor_name_file_path, 'r') as f:
+                sensor_list = [s.strip() for s in f.readlines()]
+            sel_sensor_name_idx = np.isin(sensor_list, sel_dim)
+            print(f'Select sensors using sensor names ({np.sum(sel_sensor_name_idx)} sensor selected).')
+            transforms.append(MEG_dim_selection(sel_dim, sensor_name_idx = sel_sensor_name_idx))
+        else:
+            raise Exception('Incorrect format for specifying selected sensors.')
         
     if config['MEG_data']['low_pass_filtering'] == True:
         cutoff_freq = config['MEG_data']['LP_cutoff_freq']
@@ -42,6 +56,7 @@ def data_processing(args):
     freq_range_min = config['MEG_data']['freq_range_min']
         
     MEG_SPEC = MEG_freq_feats(nperseg = frame_length, noverlap = frame_length - frame_rate, nfft = None, freq_range = (freq_range_min, freq_range_max))
+    #MEG_SPEC = MEG_freq_feats(nperseg = frame_length, noverlap = frame_length - frame_rate, nfft = 500, freq_range = (freq_range_min, freq_range_max))
     
     transforms.append(MEG_SPEC)
     transforms_all = Transform_Compose(transforms)
@@ -61,7 +76,7 @@ def data_processing(args):
         
         file_name = file_id[:-4] + '.pt'
         out_dir = os.path.join(out_folder, file_name)
-        print(f"Writing {file_name} into the folder {out_folder}")
+        print(f"Writing {file_name} ({data_Tensor.shape}) into the folder {out_folder}")
         torch.save(data_Tensor, out_dir)
     
           

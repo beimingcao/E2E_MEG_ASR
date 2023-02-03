@@ -38,12 +38,16 @@ def data_processing_DeepSpeech(data, transforms = None):
 def test_MEG_ASR(CV, test_dataset, exp_output_folder, args):
     ### Dimension setup ###
     config = yaml.load(open(args.conf_dir, 'r'), Loader=yaml.FullLoader)
-    
     if config['MEG_data']['dim_selection'] == True:
         sel_dim = config['MEG_data']['selected_dims']
-        in_dim = 0
-        for i in range(len(sel_dim) // 2):
-            in_dim += sel_dim[2*i+1] - sel_dim[2*i]
+        if all(isinstance(x, int) for x in sel_dim):
+            in_dim = 0
+            for i in range(len(sel_dim) // 2):
+                in_dim += sel_dim[2*i+1] - sel_dim[2*i]
+        elif all(isinstance(x, str) for x in sel_dim):
+            in_dim = len(sel_dim)
+        else:
+            raise Exception('Incorrect format for specifying selected sensors.')
     else:
         in_dim = config['MEG_data']['max_dim']
     
@@ -83,8 +87,12 @@ def test_MEG_ASR(CV, test_dataset, exp_output_folder, args):
    
         pred.append(' '.join(decoded_preds[0]))
         label.append(' '.join(decoded_targets[0]))
-      #  print(pred)
+        
     error = wer(pred, label)
+    for i, prediction in enumerate(pred):
+        print('Predicted:', prediction)
+        print('Target:', label[i])
+        print('')
     return error
 
 
@@ -109,6 +117,7 @@ if __name__ == '__main__':
             data_path_CV = os.path.join(data_path, 'CV' + str(CV))
            
             te = open(os.path.join(data_path_CV, 'test_data.pkl'), 'rb')
+            #te = open(os.path.join(data_path_CV, 'train_data.pkl'), 'rb')
             test_dataset = pickle.load(te)
         
             WER = test_MEG_ASR(CV, test_dataset, args.buff_dir, args)

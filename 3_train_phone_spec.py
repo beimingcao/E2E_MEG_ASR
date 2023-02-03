@@ -54,9 +54,14 @@ def train_MEG_ASR(CV, train_dataset, valid_dataset, exp_output_folder, args):
     config = yaml.load(open(args.conf_dir, 'r'), Loader=yaml.FullLoader)
     if config['MEG_data']['dim_selection'] == True:
         sel_dim = config['MEG_data']['selected_dims']
-        in_dim = 0
-        for i in range(len(sel_dim) // 2):
-            in_dim += sel_dim[2*i+1] - sel_dim[2*i]
+        if all(isinstance(x, int) for x in sel_dim):
+            in_dim = 0
+            for i in range(len(sel_dim) // 2):
+                in_dim += sel_dim[2*i+1] - sel_dim[2*i]
+        elif all(isinstance(x, str) for x in sel_dim):
+            in_dim = len(sel_dim)
+        else:
+            raise Exception('Incorrect format for specifying selected sensors.')
     else:
         in_dim = config['MEG_data']['max_dim']
     ### Model setup ###
@@ -111,6 +116,8 @@ def train_MEG_ASR(CV, train_dataset, valid_dataset, exp_output_folder, args):
     if early_stop == True:
         print('Applying early stop.')
         early_stopping = EarlyStopping(patience=patient)
+    else:
+        print('Not applying early stop.')
         
     iter_meter = IterMeter()
         
@@ -150,9 +157,10 @@ def train_MEG_ASR(CV, train_dataset, valid_dataset, exp_output_folder, args):
                 loss_valid.append(loss.detach().cpu().numpy())
             avg_loss_valid = sum(loss_valid)/len(loss_valid) 
 
-            early_stopping(avg_loss_valid)
-            if early_stopping.early_stop:
-                break
+            if early_stop: ####
+                early_stopping(avg_loss_valid)
+                if early_stopping.early_stop:
+                    break
 
             print('epoch %-3d \t train_loss = %0.5f \t valid_loss = %0.5f' % (epoch, avg_loss_train, avg_loss_valid))
             print('epoch %-3d \t train_loss = %0.5f \t valid_loss = %0.5f' % (epoch, avg_loss_train, avg_loss_valid), file = r)                           
@@ -160,8 +168,12 @@ def train_MEG_ASR(CV, train_dataset, valid_dataset, exp_output_folder, args):
             model_out_folder = os.path.join(exp_output_folder, 'trained_models')
             if not os.path.exists(model_out_folder):
                 os.makedirs(model_out_folder)
-            if early_stopping.save_model == True:
-                save_model(model, os.path.join(model_out_folder, 'CV' + str(CV) + '_DS.pt'))
+            if early_stop: ####
+                if early_stopping.save_model == True:
+                    save_model(model, os.path.join(model_out_folder, 'CV' + str(CV) + '_DS.pt'))
+    if not early_stop: ####
+        save_model(model, os.path.join(model_out_folder, 'CV' + str(CV) + '_DS.pt'))
+
     r.close()
     print('Training for CV' + str(CV) + ' is done.')       
            

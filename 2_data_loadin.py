@@ -103,7 +103,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--conf_dir', default = 'conf/conf.yaml')
+    parser.add_argument('--conf_dir', default = 'conf/conf_spec.yaml')
     parser.add_argument('--buff_dir', default = 'current_exp')
     args = parser.parse_args()
     data_loadin(args)

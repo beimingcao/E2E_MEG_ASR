@@ -113,6 +113,7 @@ class SpeechRecognitionModel(nn.Module):
             self.bn2,
             nn.ReLU()
         ])
+        #self.fully_connected = nn.Linear(33*32, rnn_dim)
         self.fully_connected = nn.Linear(33*32, rnn_dim)
         self.birnn_layers = nn.Sequential(*[
             BidirectionalGRU(rnn_dim=rnn_dim if i==0 else rnn_dim*2,
