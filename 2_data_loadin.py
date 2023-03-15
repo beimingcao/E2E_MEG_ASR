@@ -66,6 +66,7 @@ def data_loadin(args):
         train_idx = train_valid_idx[:int(len(train_valid_idx)*train_ratio)]
         valid_idx = train_valid_idx[int(len(train_valid_idx)*train_ratio):]
         
+        
         if config['Transforms']['normalize_input'] == True:    
             _train_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, train_idx)
             meg_mean_all, meg_std_all = [], []              
@@ -87,6 +88,12 @@ def data_loadin(args):
             valid_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, valid_idx)
             test_dataset = MEG_PHONE_ASR(MEG_path_list, phone_label_list, test_idx)
         
+        train_list_for_LM = os.path.join(CV_data_out_path, 'Phone_LM_train_list.txt')
+        with open(train_list_for_LM, 'w') as f:
+            for idx in train_idx:
+                l = 'SIL ' + phone_label_list[idx].strip() + ' SIL' + '\n'
+                f.write(l)
+
         
         train_pkl_path = os.path.join(CV_data_out_path, 'train_data.pkl')
         tr = open(train_pkl_path, 'wb')
@@ -96,18 +103,20 @@ def data_loadin(args):
         pickle.dump(valid_dataset, va)
         test_pkl_path = os.path.join(CV_data_out_path, 'test_data.pkl')
         te = open(test_pkl_path, 'wb')
-        pickle.dump(test_dataset, te)            
-    
+        pickle.dump(test_dataset, te)
+
+    return train_list_for_LM 
 
 if __name__ == '__main__':
     import argparse
+    import sys
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--conf_dir', default = 'conf/conf_spec.yaml')
     parser.add_argument('--buff_dir', default = 'current_exp')
     args = parser.parse_args()
-    data_loadin(args)
-
+    LM_path = data_loadin(args)
+    sys.exit(LM_path)
 
 
         
