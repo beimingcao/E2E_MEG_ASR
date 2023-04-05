@@ -6,7 +6,6 @@ import scipy.io as sio
 import torch
 from torch.utils.data import Dataset, DataLoader
 from utils.IO_func import read_file_list, load_binary_file, array_to_binary_file, load_Haskins_ATS_data
-import librosa
 
 class MEG_PHONE_ASR(Dataset):
     def __init__(self, MEG_path_list, LAB_list, idx_list, transforms=None):

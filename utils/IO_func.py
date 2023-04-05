@@ -2,7 +2,6 @@ import os
 import glob
 import numpy as np
 import scipy.io as sio
-import librosa
 
 def save_word_label(word_label, save_path):
     punctuations_to_remove = ',?.!/;:~'

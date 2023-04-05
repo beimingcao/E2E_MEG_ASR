@@ -1,6 +1,6 @@
 Corpus:
-  # path: /home/beiming/RAW_DATA/MEG/case0554_A2_220715/Sentences
-  path: C:\Users\wanglab\Desktop\Zhe-chen\NeuralSpeechDecoding\MEG\Sentences
+  path: /home/beiming/RAW_DATA/MEG/case0554_A2_220715/Sentences
+  #  path: C:\Users\wanglab\Desktop\Zhe-chen\NeuralSpeechDecoding\MEG\Sentences
   label_file: PB400_phone.txt
   sensor_name_file: MEG_sensors_204.txt          
 
@@ -46,7 +46,10 @@ Training setup:
   
 Testing_setup:
   save_model: True
-  decoding: Greedy
+  prefix_beam: True
+  beam_size: 5
+  LM_order: 2
+  LM_weight: 0.3
   
 data_augmentation:
   random_time_mask: True

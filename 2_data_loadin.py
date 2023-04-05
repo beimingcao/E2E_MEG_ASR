@@ -43,7 +43,7 @@ def data_loadin(args):
     f = open(label_file_path, 'r')
     phone_label_list = f.readlines()
     f.close()
-   # phone_label_list.sort()
+    LM_order = config['Test_setup']['LM_order']
     
     processed_data_path = os.path.join(args.buff_dir, data_session, 'data')
     MEG_path_list = glob.glob(processed_data_path + '/*.pt')
@@ -105,8 +105,6 @@ def data_loadin(args):
         te = open(test_pkl_path, 'wb')
         pickle.dump(test_dataset, te)
 
-    return train_list_for_LM 
-
 if __name__ == '__main__':
     import argparse
     import sys
@@ -116,7 +114,6 @@ if __name__ == '__main__':
     parser.add_argument('--buff_dir', default = 'current_exp')
     args = parser.parse_args()
     LM_path = data_loadin(args)
-    sys.exit(LM_path)
 
 
         

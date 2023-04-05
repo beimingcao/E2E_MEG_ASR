@@ -3,7 +3,6 @@ import yaml
 import glob
 import numpy as np
 import scipy.io as sio
-import librosa
 import torch
 from utils.IO_func import read_file_list
 from utils.database import PhoneTransform
